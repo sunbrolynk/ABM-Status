@@ -49,16 +49,16 @@ const workerConfig: WorkerConfig = {
       expectedCodes: [200],
       timeout: 10000,
     },
-    // radio.audiobookmanager.com doesn't resolve yet; uncomment once it's live.
-    // {
-    //   id: 'radio',
-    //   name: 'ABM Radio',
-    //   method: 'GET',
-    //   target: 'https://radio.audiobookmanager.com/',
-    //   statusPageLink: 'https://radio.audiobookmanager.com/',
-    //   expectedCodes: [200],
-    //   timeout: 10000,
-    // },
+    // The station's own now-playing feed: up only while AzuraCast reports the station on air.
+    {
+      id: 'radio',
+      name: 'ABM Radio',
+      method: 'GET',
+      target: 'https://stream.audiobookmanager.com/api/nowplaying/lofi',
+      expectedCodes: [200],
+      responseKeyword: '"is_online":true',
+      timeout: 10000,
+    },
   ],
   notification: {
     // Discord webhook from the DISCORD_WEBHOOK_URL repo secret, inlined when deploy.yml builds the worker

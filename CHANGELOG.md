@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- ABM Radio joins the party as the Bard, up while the station's now-playing feed says it's on air.
+
 ### Fixed
 
 - A young streak reads in hours, or "just rolled initiative", instead of "0 days".

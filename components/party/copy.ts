@@ -1,3 +1,4 @@
+import { streakPhrase } from '@/util/streak'
 import { Day, MonitorView, Status, Tone, fmtDuration } from '@/util/model'
 
 export const EFFECT: Record<Status, string> = {
@@ -57,10 +58,12 @@ export function flavour(m: MonitorView, index: number) {
   }
   if (m.status === 'maintenance') return `${m.name} is resting at the inn. Please do not poke the sleeping party member.`
   if (m.status === 'degraded') return `${m.name} ate something questionable ${m.recoveredAgoH} h ago and is still a little green. Drinking a potion.`
+  const up = streakPhrase(m.streakSeconds)
+  if (up === null) return `${m.name} just rolled initiative. The streak starts now.`
   const lines = [
-    `${m.name} has rolled a natural 20 on staying up for ${m.streak} days.`,
-    `${m.name}: ${m.streak} days without a scratch. The bards are running out of rhymes.`,
-    `${m.name} has been on its feet for ${m.streak} days. Nobody knows how, and nobody asks.`,
+    `${m.name} has rolled a natural 20 on staying up for ${up}.`,
+    `${m.name}: ${up} without a scratch. The bards are running out of rhymes.`,
+    `${m.name} has been on its feet for ${up}. Nobody knows how, and nobody asks.`,
   ]
   return lines[index % lines.length]
 }

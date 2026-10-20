@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+
+- A young streak reads in hours, or "just rolled initiative", instead of "0 days".
+
 ### Added
 
 - A new page design, The Uptime Party. Each monitor is a party member with an HP bar for its

@@ -1,90 +1,114 @@
-<div align="right">
-  <a title="English" href="README.md"><img src="https://img.shields.io/badge/-English-A31F34?style=for-the-badge" alt="English" /></a>
-  <a title="简体中文" href="README_zh-CN.md"><img src="https://img.shields.io/badge/-%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87-545759?style=for-the-badge" alt="简体中文"></a>
-</div>
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/readme/banner-dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="docs/readme/banner-light.svg">
+    <img src="docs/readme/banner-dark.svg" alt="AudioBook Manager" width="560">
+  </picture>
+</p>
 
-# ✔[UptimeFlare](https://github.com/lyc8503/UptimeFlare)
+<p align="center"><b>The status page for AudioBook Manager's website and docs.</b></p>
 
-A more advanced, serverless, and free uptime monitoring & status page solution, powered by Cloudflare Workers, complete with a user-friendly interface.
+<p align="center">
+  <a href="https://status.audiobookmanager.com"><img src="https://img.shields.io/badge/status-status.audiobookmanager.com-8b45c6?style=for-the-badge" alt="Status page"></a>
+  <img src="https://img.shields.io/badge/powered%20by-UptimeFlare-blue?style=for-the-badge" alt="Powered by UptimeFlare">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache%202.0-8b45c6?style=for-the-badge" alt="Apache 2.0 license"></a>
+</p>
 
-📢 **[[SECURITY ADVISORY](https://github.com/lyc8503/UptimeFlare/security/advisories/GHSA-36q9-v7p3-vj6v) 2026/03/04]** A vulnerability (CVE-2026-29779) that could expose monitor configuration and credentials in `uptime.config.ts` to clients was fixed. Versions between 2025-09-21 (from commit `41257c6`) and 2026-03-04 are affected. **Affected users are strongly advised to upgrade to the latest version.**
+<p align="center">
+  <a href="https://github.com/sunbrolynk/abm-status/actions/workflows/checks.yml"><img src="https://github.com/sunbrolynk/abm-status/actions/workflows/checks.yml/badge.svg?branch=dev" alt="Checks"></a>
+</p>
 
-🎉 **[UPDATE 2026/01/03]** I have just migrated UptimeFlare from KV to D1 Database. I also updated the Terraform Cloudflare provider to v5 and improved the deployment process. The data structure has been optimized to resolve long-standing performance issues.
+<hr>
 
-New users can deploy directly, while existing users can have a simple auto migration process (upgrade docs below)! Feel free to open an issue if you run into any trouble deploying.
+This is the uptime page for [AudioBook Manager](https://audiobookmanager.com), live at
+[status.audiobookmanager.com](https://status.audiobookmanager.com). It runs on
+[UptimeFlare](https://github.com/lyc8503/UptimeFlare) by lyc8503: a Cloudflare Worker checks
+each target every minute and a Cloudflare Pages site shows the history.
 
-## ⭐Features
+## What it watches
 
-- Open-source, easy to deploy (in under 10 minutes, no local tools required), and free
-- Monitoring capabilities
-  - Up to 50 checks at 1-minute intervals
-  - Geo-specific checks from over [310 cities](https://www.cloudflare.com/network/) worldwide
-  - Support for HTTP/HTTPS/TCP port monitoring
-  - Up to 90-day uptime history and uptime percentage tracking
-  - Customizable request methods, headers, and body for HTTP(s)
-  - Custom status code & keyword checks for HTTP(s)
-  - Downtime notification supporting [100+ notification channels](https://github.com/caronc/apprise/wiki)
-  - Customizable Webhook
-  - Multi-language support (English/Chinese)
-- Status page
-  - Interactive ping (response time) chart for all types of monitors
-  - Scheduled maintenances alerts & Incident history page
-  - Responsive UI that adapts to your system theme
-  - Customizable status page
-  - Use your own domain with CNAME
-  - Optional password authentication (private status page)
-  - JSON API for fetching realtime status data
+| Monitor | URL |
+|---|---|
+| Website | https://audiobookmanager.com/ |
+| Docs: Quick start | https://audiobookmanager.com/getting-started/quick-start/ |
+| Docs: Installation | https://audiobookmanager.com/installation/ |
+| API reference | https://audiobookmanager.com/api-reference/ |
 
-## 👀Demo
+ABM Radio (`radio.audiobookmanager.com`) is in `uptime.config.ts` but commented out, because the
+name doesn't resolve yet. I'll switch it on when the station goes live.
 
-My status page (Online demo): https://uptimeflare.pages.dev/
+Downtime and recovery alerts go to Discord. Everything is set in `uptime.config.ts`.
 
-Some screenshots:
+## Deploying
 
-![Desktop, Light theme](docs/desktop.png)
+Pushing to `main` runs `.github/workflows/deploy.yml`, which builds the worker and the page and
+applies them with Terraform and wrangler. It needs these repository secrets:
 
-## ⚡Quickstart / 📄Documentation
+| Secret | What it is |
+|---|---|
+| `CLOUDFLARE_API_TOKEN` | Cloudflare token with Workers, Pages and D1 edit rights |
+| `CLOUDFLARE_ACCOUNT_ID` | Optional; looked up from the token when it's missing |
+| `DISCORD_WEBHOOK_URL` | Discord webhook for alerts; with none set, no alerts are sent |
 
-Please refer to [Wiki](https://github.com/lyc8503/UptimeFlare/wiki)
+The webhook URL is inlined into the worker bundle at build time with `wrangler --define`, so it
+never sits in the repo and never reaches the page.
 
-## 🚀Upgrade existing deployments
+## Cloudflare names
 
-Get the latest features right away with [simple upgrade process](https://github.com/lyc8503/UptimeFlare/wiki/Synchronize-updates-from-upstream)
+Three status pages share one Cloudflare account, so every resource name here comes from one
+prefix, `uptimeflare-abm`, instead of upstream's fixed `uptimeflare` names:
 
-## ⚙️Docs for developer
+| Resource | Name |
+|---|---|
+| Worker | `uptimeflare-abm_worker` |
+| D1 database | `uptimeflare-abm_d1` |
+| Pages project | `uptimeflare-abm` (`uptimeflare-abm.pages.dev`) |
+| Old KV namespace the migration looks for | `uptimeflare-abm_kv` |
 
-To contribute new features or customize your deployment furthermore, see [here](https://github.com/lyc8503/UptimeFlare/wiki/How-to-develop).
+The prefix is `TF_VAR_UF_PREFIX` at the top of `deploy.yml`. These files carry the rename:
 
-## New features (TODOs)
+- `.github/workflows/deploy.yml`: the prefix, the Durable Object lookup, the Terraform imports
+  and the Pages upload
+- `deploy.tf`: the `UF_PREFIX` variable and the D1, Worker and Pages names
+- `deploy/init_d1.py` and `deploy/migrate_kv.py`: the D1 and KV names
+- `wrangler.toml`, `worker/wrangler.toml` and `entrypoint.sh`: the same names written out, for
+  local builds and Docker
 
-- [x] Specify region for monitors
-- [x] TCP `opened` promise
-- [x] Use apprise to support various notification channels
-- [x] ~~Telegram example~~
-- [x] ~~[Bark](https://bark.day.app) example~~
-- [x] ~~Email notification via Cloudflare Email Workers~~
-- [x] Improve docs by providing simple examples
-- [x] Notification grace period
-- [ ] SSL certificate checks
-- [x] ~~Self-host Dockerfile~~
-- [x] Incident history
-- [x] Improve `checkLocationWorkerRoute` and fix possible `proxy failed`
-- [x] Groups
-- [x] Remove old incidents
-- [x] ~~Known issue~~: `fetch` doesn't support non-standard port (resolved after CF update)
-- [x] Compatibility date update
-- [x] Scheduled Maintenance
-- [x] Add docs for dev
-- [x] Migration to Terraform Cloudflare provider version 5.x
-- [x] Cloudflare D1 database
-- [x] Scheduled maintenances (via IIFE)
-- [x] Simpler config example
-- [x] Upcoming maintenances
-- [x] Universal Webhook upgrade
-- [x] i18n...? (maybe)
-- [ ] ICMP via proxy?
-- [x] Add default UA
-- [x] Customizable footer
-- [x] New header logo
-- [x] Improve CPU time usage
-- [x] Local deployment (docs WIP)
+UptimeFlare's Upstream Sync workflow replaces everything except `uptime.config.ts`, which would
+undo the rename and the repo checks, and the branch rules stop it pushing to `main` anyway. I
+bring upstream changes in by hand on a branch and re-apply the rename to the files above.
+
+## Custom domain
+
+`status.audiobookmanager.com` is a custom domain on the `uptimeflare-abm` Pages project, added
+in the Cloudflare dashboard under Workers & Pages, then the project's Custom domains tab.
+
+## Working on it
+
+`dev` is the work branch and changes land on it by PR. `main` deploys, and `dev` reaches it by PR.
+
+```sh
+bash scripts/install-hooks.sh
+```
+
+That installs the commit and push checks: gitleaks, a public-repo check for home-network
+details, and a changelog check.
+
+## Support
+
+If you find AudioBook Manager useful, you can support it here:
+
+<p align="center">
+  <a href="https://ko-fi.com/sunbrolynk">
+    <img src="https://img.shields.io/badge/Ko--fi-Support%20Development-FF5E5B?style=for-the-badge&logo=ko-fi&logoColor=white" alt="Ko-fi">
+  </a>
+  <a href="https://buymeacoffee.com/sunbrolynk">
+    <img src="https://img.shields.io/badge/Buy%20Me%20A%20Monster-Support-FFDD00?style=for-the-badge&logo=data:image/svg%2Bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iYmxhY2siPjxwYXRoIGQ9Ik01IDJoMTRsLTEgMThINkw1IDJ6bTIgMmwuNzUgMTRoOC41TDE3IDRIN3oiLz48cGF0aCBkPSJNMTMgNmwtMyA1aDIuNUwxMSAxN2w1LTdoLTNsMi00aC0yeiIvPjxwYXRoIGQ9Ik04IDIwaDh2Mkg4di0yeiIvPjwvc3ZnPg%3D%3D" alt="Buy Me A Monster">
+  </a>
+</p>
+
+## Credits and licence
+
+Built on [UptimeFlare](https://github.com/lyc8503/UptimeFlare) by
+[lyc8503](https://github.com/lyc8503), under the Apache License 2.0. My changes are under the
+same licence; see [LICENSE](LICENSE) and [NOTICE](NOTICE).

@@ -1,0 +1,7 @@
+import '@fontsource/pixelify-sans/500.css'
+import '@fontsource/pixelify-sans/700.css'
+import '@fontsource/spectral/400.css'
+import '@fontsource/spectral/400-italic.css'
+import '@fontsource/spectral/600.css'
+import '@fontsource/jetbrains-mono/400.css'
+import '@fontsource/jetbrains-mono/600.css'

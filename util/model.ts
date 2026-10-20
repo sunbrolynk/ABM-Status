@@ -16,7 +16,7 @@ export type MonitorView = {
   latest: number | null
   avgPing: number | null
   days: Day[]
-  streak: number
+  streakSeconds: number
   lastError?: string
   downSince?: number
   recoveredAgoH?: number
@@ -123,7 +123,7 @@ export function buildModel(
         latest: isDown ? null : pings[pings.length - 1] ?? null,
         avgPing: pings.length ? Math.round(pings.reduce((a, b) => a + b, 0) / pings.length) : null,
         days,
-        streak: isDown ? 0 : Math.floor((now - (last.end as number)) / DAY),
+        streakSeconds: isDown ? 0 : now - (last.end as number),
         lastError: isDown ? last.error[last.error.length - 1] : undefined,
         downSince: isDown ? last.start[0] : undefined,
         recoveredAgoH: recoveredAgo < DAY ? Math.max(1, Math.round(recoveredAgo / 3600)) : undefined,

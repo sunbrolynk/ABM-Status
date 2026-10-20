@@ -1,12 +1,6 @@
 // Don't edit this line
 import { MaintenanceConfig, PageConfig, WorkerConfig } from './types/config'
 
-// ABM's palette over Mantine's variables: purple accent, ABM's dark surfaces.
-const theme = `<style>
-:root:root { --mantine-color-blue-filled: #8b45c6; --mantine-color-blue-filled-hover: #7a3ab5; --mantine-color-anchor: #8b45c6; --mantine-primary-color-filled: #8b45c6; --mantine-primary-color-filled-hover: #7a3ab5; }
-:root:root[data-mantine-color-scheme='dark'] { --mantine-color-body: #1a1a1a; --mantine-color-dark-7: #1a1a1a; --mantine-color-dark-6: #1e1e1e; --mantine-color-dark-5: #2a2a2a; --mantine-color-dark-4: #2a2a2a; --mantine-color-anchor: #b07ce0; }
-</style>`
-
 const pageConfig: PageConfig = {
   title: 'AudioBook Manager Status',
   links: [
@@ -15,9 +9,6 @@ const pageConfig: PageConfig = {
   ],
   favicon: '/favicon.png',
   logo: '/logo.png',
-  customFooter:
-    theme +
-    '<p style="text-align: center; font-size: 12px; margin-top: 10px;">Status for <a href="https://audiobookmanager.com">AudioBook Manager</a>, powered by <a href="https://github.com/lyc8503/UptimeFlare" target="_blank">UptimeFlare</a>.</p>',
 }
 
 const workerConfig: WorkerConfig = {

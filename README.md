@@ -25,6 +25,24 @@ This is the uptime page for [AudioBook Manager](https://audiobookmanager.com), l
 [UptimeFlare](https://github.com/lyc8503/UptimeFlare) by lyc8503: a Cloudflare Worker checks
 each target every minute and a Cloudflare Pages site shows the history.
 
+## What the page looks like
+
+<p align="center">
+  <img src="docs/readme/party-operational-dark.png" alt="The Uptime Party in dark mode, all systems operational" width="49%">
+  <img src="docs/readme/party-degraded-light.png" alt="The Uptime Party in light mode, with one monitor down" width="49%">
+</p>
+
+The page is an RPG party. Each monitor is a party member with a level, an HP bar for its 90-day
+uptime, a status effect and a line of flavour text. The crystal ball at the top clears, clouds
+over or goes dark with the overall state. Maintenance shows as the party taking a long rest, and
+`/incidents` reads as a quest log. Every state carries its plain word (Operational, Degraded, Down
+or Maintenance) as well as the colour and the joke, and the 90-day history can be read with the
+keyboard.
+
+A monitor is Degraded when it is up but recovered from an outage less than 24 hours ago. The
+overall state is Degraded when any monitor is down or degraded, and Down only when every monitor
+is down.
+
 ## What it watches
 
 | Monitor | id | URL |
@@ -113,6 +131,11 @@ bash scripts/install-hooks.sh
 
 That installs the commit and push checks: gitleaks, a public-repo check for home-network
 details, and a changelog check.
+
+The page itself is in `components/party/`, its styles are in `styles/party.css` and the jokes
+are in `components/party/copy.ts`. The fonts come from `@fontsource` packages, so the page makes
+no third-party requests. The `customFooter` option in `uptime.config.ts` is no longer used; the
+footer is `components/party/Footer.tsx`.
 
 ## Support
 

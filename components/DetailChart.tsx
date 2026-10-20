@@ -1,102 +1,38 @@
 import { Line } from 'react-chartjs-2'
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip as ChartTooltip,
-  Legend,
-  TimeScale,
-} from 'chart.js'
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Tooltip as ChartTooltip, Legend, TimeScale } from 'chart.js'
 import 'chartjs-adapter-moment'
 import { MonitorState, MonitorTarget } from '@/types/config'
 import { codeToCountry } from '@/util/iata'
-import { useTranslation } from 'react-i18next'
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  ChartTooltip,
-  Legend,
-  TimeScale
-)
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ChartTooltip, Legend, TimeScale)
 
-export default function DetailChart({
-  monitor,
-  state,
-}: {
-  monitor: MonitorTarget
-  state: MonitorState
-}) {
-  const { t } = useTranslation('common')
-  const latencyData = state.latency[monitor.id].map((point) => ({
-    x: point.time * 1000,
-    y: point.ping,
-    loc: point.loc,
-  }))
+export default function DetailChart({ monitor, state }: { monitor: MonitorTarget; state: MonitorState }) {
+  const css = getComputedStyle(document.documentElement)
+  const accent = css.getPropertyValue('--accent').trim() || '#8b45c6'
+  const grid = css.getPropertyValue('--line').trim() || 'rgba(128,128,128,.2)'
+  const text = css.getPropertyValue('--muted').trim() || '#888'
+  const latencyData = state.latency[monitor.id].map((p) => ({ x: p.time * 1000, y: p.ping, loc: p.loc }))
 
-  let data = {
-    datasets: [
-      {
-        data: latencyData,
-        borderColor: 'rgb(112, 119, 140)',
-        borderWidth: 2,
-        radius: 0,
-        cubicInterpolationMode: 'monotone' as const,
-        tension: 0.4,
-      },
-    ],
+  const data = {
+    datasets: [{ data: latencyData, borderColor: accent, backgroundColor: accent + '22', fill: true, borderWidth: 2, radius: 0, tension: 0.4, cubicInterpolationMode: 'monotone' as const }],
   }
-
-  let options = {
+  const options = {
     responsive: true,
     maintainAspectRatio: false,
-    interaction: {
-      mode: 'index' as const,
-      intersect: false,
-    },
-    animation: {
-      duration: 0,
-    },
+    interaction: { mode: 'index' as const, intersect: false },
+    animation: { duration: 0 },
     plugins: {
-      tooltip: {
-        callbacks: {
-          label: (item: any) => {
-            if (item.parsed.y) {
-              return `${item.parsed.y}ms (${codeToCountry(item.raw.loc)})`
-            }
-          },
-        },
-      },
-      legend: {
-        display: false,
-      },
-      title: {
-        display: true,
-        text: t('Response times'),
-        align: 'start' as const,
-      },
+      legend: { display: false },
+      tooltip: { callbacks: { label: (item: any) => (item.parsed.y ? `${item.parsed.y}ms (${codeToCountry(item.raw.loc)})` : '') } },
     },
     scales: {
-      x: {
-        type: 'time' as const,
-        ticks: {
-          source: 'auto' as const,
-          maxRotation: 0,
-          autoSkip: true,
-        },
-      },
+      x: { type: 'time' as const, grid: { color: grid }, ticks: { color: text, maxRotation: 0, autoSkip: true } },
+      y: { grid: { color: grid }, ticks: { color: text } },
     },
   }
-
   return (
-    <div style={{ height: '150px' }}>
-      <Line options={options} data={data} />
+    <div className="latency-chart" style={{ height: 150, marginTop: 10 }}>
+      <Line options={options} data={data} role="img" aria-label={`Response time for ${monitor.name} over the last 12 hours`} />
     </div>
   )
 }

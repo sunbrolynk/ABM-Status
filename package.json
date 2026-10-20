@@ -10,7 +10,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@cloudflare/workers-types": "^4.20250410.0",
+    "@cloudflare/workers-types": "^5.20261006.1",
     "@fontsource/jetbrains-mono": "5.3.0",
     "@fontsource/pixelify-sans": "5.3.0",
     "@fontsource/spectral": "5.3.0",

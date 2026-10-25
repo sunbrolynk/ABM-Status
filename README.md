@@ -1,8 +1,8 @@
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/readme/banner-dark.svg">
-    <source media="(prefers-color-scheme: light)" srcset="docs/readme/banner-light.svg">
-    <img src="docs/readme/banner-dark.svg" alt="AudioBook Manager" width="560">
+    <source media="(prefers-color-scheme: dark)" srcset="docs/readme/abm-wordmark-dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="docs/readme/abm-wordmark-light.svg">
+    <img src="docs/readme/abm-wordmark-dark.svg" alt="AudioBook Manager" width="560">
   </picture>
 </p>
 

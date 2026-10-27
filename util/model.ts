@@ -1,4 +1,5 @@
 import { MaintenanceConfig, MonitorState, MonitorTarget } from '@/types/config'
+import { date, has, t } from '@/util/i18n'
 
 export type Level = 'ok' | 'good' | 'warn' | 'bad' | 'none'
 export type Status = 'up' | 'degraded' | 'down' | 'maintenance'
@@ -37,18 +38,10 @@ export type ChronicleEvent = {
 export type Model = {
   monitors: MonitorView[]
   tone: Tone
-  word: string
   upCount: number
   total: number
   resting: MaintenanceConfig[]
   events: ChronicleEvent[]
-}
-
-export const STATUS_WORD: Record<Status, string> = {
-  up: 'Operational',
-  degraded: 'Degraded',
-  down: 'Down',
-  maintenance: 'Maintenance',
 }
 
 const DAY = 86400
@@ -62,7 +55,9 @@ export function levelOf(pct: number | null): Level {
   return 'bad'
 }
 
-const clock = (sec: number) => new Date(sec * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+const clock = (sec: number) => date(sec * 1000, { hour: '2-digit', minute: '2-digit' })
+// A monitor's name in the reader's language when the page has one for its id
+const nameOf = (m: MonitorTarget) => (has(`monitor.${m.id}`) ? t(`monitor.${m.id}`) : m.name)
 
 export function buildModel(
   state: MonitorState,
@@ -115,7 +110,7 @@ export function buildModel(
 
       return {
         id: m.id,
-        name: m.name,
+        name: nameOf(m),
         link: m.statusPageLink,
         endpoint: m.endpoint,
         status,
@@ -131,7 +126,7 @@ export function buildModel(
       }
     })
 
-  const nameOf = (id: string) => monitors.find((m) => m.id === id)?.name ?? id
+  const nameById = (id: string) => { const m = monitors.find((x) => x.id === id); return m ? nameOf(m) : id }
   const events: ChronicleEvent[] = []
   for (const m of views) {
     for (const inc of state.incident[m.id]) {
@@ -149,9 +144,9 @@ export function buildModel(
   for (const mt of maintenances) {
     events.push({
       kind: 'maintenance',
-      title: mt.title ?? 'Scheduled maintenance',
+      title: mt.title ?? t('maint.default'),
       body: mt.body,
-      monitors: (mt.monitors ?? []).map(nameOf),
+      monitors: (mt.monitors ?? []).map(nameById),
       start: new Date(mt.start).getTime(),
       end: mt.end ? new Date(mt.end).getTime() : null,
       color: mt.color,
@@ -165,17 +160,9 @@ export function buildModel(
   return {
     monitors: views,
     tone,
-    word: tone === 'ok' ? 'Operational' : tone === 'down' ? 'Down' : 'Degraded',
     upCount: views.length - downCount,
     total: views.length,
     resting,
     events,
   }
-}
-
-export function fmtDuration(ms: number) {
-  const m = Math.max(1, Math.round(ms / 60000))
-  if (m < 60) return `${m} min`
-  const h = Math.floor(m / 60)
-  return h < 24 ? `${h} h ${m % 60} min` : `${Math.floor(h / 24)} d ${h % 24} h`
 }

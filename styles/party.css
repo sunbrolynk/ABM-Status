@@ -212,3 +212,6 @@ main { max-width: 1040px; margin: 0 auto; padding: 0 18px 40px; }
 @media (prefers-reduced-motion: reduce) {
   .world *, .world *::before, .world *::after { animation: none !important; transition: none !important; }
 }
+
+/* Chinese, Japanese and Korean have no true italic, and a slanted fallback reads as a mistake */
+:lang(ja) :is(.line, .lede, .effect, .flavour, .wit), :lang(zh) :is(.line, .lede, .effect, .flavour, .wit), :lang(ko) :is(.line, .lede, .effect, .flavour, .wit) { font-style: normal; }

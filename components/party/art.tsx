@@ -1,10 +1,11 @@
 import { ReactNode } from 'react'
 import { PartyClass } from '@/util/partyClass'
+import { t } from '@/util/i18n'
 
 // Hand-drawn SVG: crystal ball, class badges and status icons. No external art.
 export function CrystalBall({ tone }: { tone: 'ok' | 'degraded' | 'down' }) {
   return (
-    <svg className="ball" data-tone={tone} viewBox="0 0 200 220" role="img" aria-label={`Crystal ball, ${tone === 'ok' ? 'clear' : tone === 'degraded' ? 'clouded' : 'black and cracked'}`}>
+    <svg className="ball" data-tone={tone} viewBox="0 0 200 220" role="img" aria-label={t(`ball.label.${tone}`)}>
       <defs>
         <radialGradient id="glass" cx="38%" cy="32%" r="75%">
           <stop offset="0" stopColor="var(--ball-hi)" />

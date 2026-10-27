@@ -28,6 +28,9 @@ jobs:
           bash scripts/check-public.sh
           bash scripts/check-public.sh --history
 
+      - name: Check every translation has the English keys
+        run: node scripts/check-locales.mjs
+
       - name: Check every config change has a changelog entry
         if: github.event_name == 'pull_request'
         run: bash scripts/check-changelog.sh "origin/${GITHUB_BASE_REF}..HEAD"

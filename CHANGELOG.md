@@ -14,6 +14,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- The page loads on Cloudflare instead of failing with a server error, by picking the reader's
+  language in the browser rather than on the server, which has none.
 - A young streak reads in hours, or "just rolled initiative", instead of "0 days".
 
 ### Added

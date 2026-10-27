@@ -1,11 +1,10 @@
 import { MonitorState, MonitorTarget } from '@/types/config'
-import { MonitorView } from '@/util/model'
-import { ms, num, pct, t } from '@/util/i18n'
+import { MonitorView, STATUS_WORD } from '@/util/model'
 import DayStrip from '@/components/DayStrip'
 import Latency from '@/components/Latency'
 import { classFor } from '@/util/partyClass'
 import { Avatar, EffectIcon } from './art'
-import { dayLine, flavour } from './copy'
+import { dayLine, EFFECT, flavour } from './copy'
 
 export function Member({ m, index, state, monitor }: { m: MonitorView; index: number; state: MonitorState; monitor: MonitorTarget }) {
   const cls = classFor(m.id)
@@ -17,27 +16,27 @@ export function Member({ m, index, state, monitor }: { m: MonitorView; index: nu
         <Avatar cls={cls} status={m.status} />
         <div className="member-id">
           <h3>{m.link ? <a href={m.link} target="_blank" rel="noreferrer">{m.name}</a> : m.name}</h3>
-          <p className="class">{t('member.level', { level: num(level), class: t(`class.${cls}`) })} <span className="ep">{m.endpoint}</span></p>
+          <p className="class">Lv {level} {cls} <span className="ep">{m.endpoint}</span></p>
         </div>
         <p className="plate" data-status={m.status}>
           <EffectIcon status={m.status} />
-          <span className="word">{t(`status.${m.status}`)}</span>
-          <span className="effect">{t(`effect.${m.status}`)}</span>
+          <span className="word">{STATUS_WORD[m.status]}</span>
+          <span className="effect">{EFFECT[m.status]}</span>
         </p>
       </div>
-      <div className="hp" role="img" aria-label={m.status === 'down' ? t('member.healthOut') : t('member.health', { pct: pct(m.uptime) })}>
-        <span className="hp-label">{t('member.hp')}</span>
+      <div className="hp" role="img" aria-label={m.status === 'down' ? 'Health: knocked out' : `Health ${m.uptime}%`}>
+        <span className="hp-label">HP</span>
         <span className="hp-bar"><b style={{ width: `${hp}%` }} /></span>
-        <span className="hp-num">{m.status === 'down' ? t('member.hpZero') : pct(m.uptime)}</span>
+        <span className="hp-num">{m.status === 'down' ? '0 HP' : `${m.uptime}%`}</span>
       </div>
       <p className="flavour">{flavour(m, index)}</p>
-      <DayStrip days={m.days} label={t('member.log', { name: m.name })} describe={dayLine} />
+      <DayStrip days={m.days} label={`${m.name} battle log`} describe={dayLine} />
       <div className="meta">
-        <span>{t('member.uptime', { pct: pct(m.uptime) })}</span>
-        <span>{t('member.reflexes', { ms: m.latest ? ms(m.latest) : '-' })}</span>
-        <span>{t('member.avg', { ms: m.avgPing === null ? '-' : ms(m.avgPing) })}</span>
+        <span>90-day uptime {m.uptime}%</span>
+        <span>Reflexes {m.latest ? `${m.latest} ms` : '-'}</span>
+        <span>Avg {m.avgPing ?? '-'} ms</span>
       </div>
-      <Latency monitor={{ ...monitor, name: m.name }} state={state} openLabel={t('member.glassOpen')} closeLabel={t('member.glassClose')} />
+      <Latency monitor={monitor} state={state} openLabel="Consult the scrying glass" closeLabel="Close the scrying glass" />
     </li>
   )
 }

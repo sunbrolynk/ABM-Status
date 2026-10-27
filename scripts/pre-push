@@ -37,6 +37,9 @@ bash scripts/check-public.sh --history
 echo "Checking every translation has the English keys..."
 node scripts/check-locales.mjs
 
+echo "Serving every page in the Workers runtime..."
+bash scripts/check-edge.sh
+
 echo "Checking every config change has a changelog entry..."
 bash scripts/check-changelog.sh
 

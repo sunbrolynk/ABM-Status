@@ -43,21 +43,28 @@ export function matchLocale(tag: string): string | null {
 }
 
 // The first browser language with a translation; Intl formats in that exact tag (de-AT, es-MX), so numbers and dates follow the reader's region
-export function detect(languages: readonly string[]): { locale: string; tag: string } {
+export function detect(languages: readonly (string | undefined)[]): { locale: string; tag: string } {
   for (const tag of languages) {
-    const locale = matchLocale(tag)
-    if (locale) return { locale, tag }
+    const locale = tag && matchLocale(tag)
+    if (tag && locale) return { locale, tag }
   }
   return { locale: 'en', tag: 'en' }
 }
 
-const nav = typeof navigator === 'undefined' ? null : navigator
-const found = detect(nav ? (nav.languages?.length ? nav.languages : [nav.language]) : [])
-export const locale = found.locale
-export const intlTag = found.tag
-const messages = MESSAGES[locale]
+// English until setLocale runs in the browser; the server (a Cloudflare Worker) has no reader language
+export let locale = 'en'
+export let intlTag = 'en'
+let messages: Messages = en
 const base: Messages = en
-const plurals = new Intl.PluralRules(intlTag)
+let plurals = new Intl.PluralRules(intlTag)
+
+// Switch to the reader's first translated language; call before rendering anything translated
+export function setLocale(languages: readonly (string | undefined)[]): string {
+  ;({ locale, tag: intlTag } = detect(languages))
+  messages = MESSAGES[locale]
+  plurals = new Intl.PluralRules(intlTag)
+  return locale
+}
 
 function lookup(key: string, vars: Vars): string {
   if (typeof vars.count === 'number') {
@@ -101,10 +108,11 @@ export function duration(msSpan: number, unitDisplay: 'short' | 'long' = 'short'
 }
 
 if (process.env.NODE_ENV !== 'production') {
-  const pick = (...tags: string[]) => detect(tags).locale
+  const pick = (...tags: (string | undefined)[]) => detect(tags).locale
   console.assert(pick('de-AT') === 'de' && pick('pt-PT') === 'pt-br' && pick('nn-NO') === 'nb', 'regional tags reach their language')
   console.assert(pick('zh-Hant-HK') === 'zh-tw' && pick('zh-HK') === 'zh-tw' && pick('zh') === 'zh-cn', 'Chinese splits by script')
   console.assert(pick('en-NZ') === 'en-au' && pick('en-IE') === 'en-gb' && pick('en-US') === 'en', 'English variants keep their spelling')
   console.assert(pick('tr', 'fr-CA') === 'fr' && pick('tr') === 'en' && pick() === 'en', 'the first translated language wins, else English')
+  console.assert(pick(undefined) === 'en' && pick(undefined, 'ja') === 'ja', 'a missing language is skipped, not a crash')
   console.assert(fill('{a} of {b}', { a: 1, b: 2 }) === '1 of 2' && fill('{x}', {}) === '{x}', 'placeholders fill, unknown ones stay')
 }

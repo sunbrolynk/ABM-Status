@@ -8,8 +8,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
-- The page speaks the same 21 languages as audiobookmanager.com, picked from the browser's language
-  and falling back to English, with dates, durations and numbers in the reader's own format.
 - ABM Radio joins the party as the Bard, up while the station's now-playing feed says it's on air.
 
 ### Fixed

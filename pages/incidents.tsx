@@ -1,7 +1,6 @@
 import Head from 'next/head'
 import { MonitorTarget } from '@/types/config'
 import { pageConfig } from '@/uptime.config'
-import { t } from '@/util/i18n'
 import { CompactedMonitorStateWrapper, getFromStore } from '@/worker/src/store'
 import { Chronicle } from '@/components/party'
 
@@ -12,7 +11,7 @@ export default function Page({ compactedStateStr, monitors }: { compactedStateSt
   return (
     <>
       <Head>
-        <title>{t('meta.title')}</title>
+        <title>{pageConfig.title}</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href={pageConfig.favicon ?? '/favicon.png'} />
       </Head>

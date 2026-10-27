@@ -15,7 +15,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/sunbrolynk/abm-status/actions/workflows/checks.yml"><img src="https://github.com/sunbrolynk/abm-status/actions/workflows/checks.yml/badge.svg?branch=dev" alt="Checks"></a>
+  <a href="https://github.com/sunbrolynk/ABM-Status/actions/workflows/checks.yml"><img src="https://github.com/sunbrolynk/ABM-Status/actions/workflows/checks.yml/badge.svg?branch=dev" alt="Checks"></a>
 </p>
 
 <hr>

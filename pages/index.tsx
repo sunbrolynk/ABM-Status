@@ -7,7 +7,15 @@ import { Home } from '@/components/party'
 
 export const runtime = 'experimental-edge'
 
-export default function Page({ compactedStateStr, monitors }: { compactedStateStr: string; monitors: MonitorTarget[] }) {
+export default function Page({
+  compactedStateStr,
+  monitors,
+  graceMin,
+}: {
+  compactedStateStr: string
+  monitors: MonitorTarget[]
+  graceMin: number | null
+}) {
   const state = new CompactedMonitorStateWrapper(compactedStateStr).uncompact()
   return (
     <>
@@ -16,7 +24,7 @@ export default function Page({ compactedStateStr, monitors }: { compactedStateSt
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href={pageConfig.favicon ?? '/favicon.png'} />
       </Head>
-      <Home state={state} monitors={monitors} />
+      <Home state={state} monitors={monitors} graceMin={graceMin ?? undefined} />
     </>
   )
 }
@@ -31,6 +39,8 @@ export async function getServerSideProps() {
     endpoint: `${monitor.method} ${new URL(monitor.target).pathname}`,
     // @ts-ignore
     statusPageLink: monitor?.statusPageLink ?? null,
+    ...(monitor.slowMs ? { slowMs: monitor.slowMs } : {}),
   }))
-  return { props: { compactedStateStr, monitors } }
+  // Props must be JSON, so an unset grace period travels as null
+  return { props: { compactedStateStr, monitors, graceMin: workerConfig.notification?.gracePeriod ?? null } }
 }

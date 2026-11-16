@@ -1,4 +1,4 @@
-import { ago, date, duration, pct, t } from '@/util/i18n'
+import { date, duration, pct, t } from '@/util/i18n'
 import { streakPhrase } from '@/util/streak'
 import { Day, MonitorView, Tone } from '@/util/model'
 
@@ -27,7 +27,7 @@ export function flavour(m: MonitorView, index: number) {
     return m.downSince ? t('flavour.downFor', { name, error, duration: duration(Date.now() - m.downSince * 1000) }) : t('flavour.down', { name, error })
   }
   if (m.status === 'maintenance') return t('flavour.rest', { name })
-  if (m.status === 'degraded') return t('flavour.degraded', { name, ago: ago(m.recoveredAgoH ?? 1, 'hour') })
+  if (m.status === 'degraded') return t('flavour.degraded', { name })
   const streak = streakPhrase(m.streakSeconds)
   if (streak === null) return t('flavour.fresh', { name })
   return t(`flavour.streak.${index % 3}`, { name, streak })

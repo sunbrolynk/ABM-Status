@@ -30,8 +30,8 @@ function Entry({ e }: { e: ChronicleEvent }) {
   )
 }
 
-export function Chronicle({ state, monitors }: { state: MonitorState; monitors: MonitorTarget[] }) {
-  const { events } = buildModel(state, monitors, maintenances)
+export function Chronicle({ state, monitors, graceMin }: { state: MonitorState; monitors: MonitorTarget[]; graceMin?: number }) {
+  const { events } = buildModel(state, monitors, maintenances, graceMin)
   const chapters = events.reduce<Record<string, ChronicleEvent[]>>((acc, e) => ((acc[month(e.start)] ??= []).push(e), acc), {})
   return (
     <Shell>

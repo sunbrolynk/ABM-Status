@@ -1,5 +1,6 @@
 import { MaintenanceConfig, MonitorState, MonitorTarget } from '@/types/config'
 import { date, has, t } from '@/util/i18n'
+import { isOutage } from '@/util/outage'
 
 export type Level = 'ok' | 'good' | 'warn' | 'bad' | 'none'
 export type Status = 'up' | 'degraded' | 'down' | 'maintenance'
@@ -20,7 +21,6 @@ export type MonitorView = {
   streakSeconds: number
   lastError?: string
   downSince?: number
-  recoveredAgoH?: number
   ageDays: number
 }
 
@@ -45,6 +45,8 @@ export type Model = {
 }
 
 const DAY = 86400
+// Below this, a monitor's response time is jitter, not a problem
+export const SLOW_MS = 3000
 const overlap = (a1: number, a2: number, b1: number, b2: number) => Math.max(0, Math.min(a2, b2) - Math.max(a1, b1))
 
 export function levelOf(pct: number | null): Level {
@@ -63,6 +65,7 @@ export function buildModel(
   state: MonitorState,
   monitors: MonitorTarget[],
   maintenances: MaintenanceConfig[],
+  graceMin?: number,
   nowMs: number = Date.now()
 ): Model {
   const now = Math.round(nowMs / 1000)
@@ -77,6 +80,8 @@ export function buildModel(
     .filter((m) => state.incident[m.id] && state.latency[m.id])
     .map((m) => {
       const incidents = state.incident[m.id]
+        // The first record is the monitor's own start marker
+        .filter((inc) => inc.error[0] === 'dummy' || isOutage(inc, state.lastUpdate, graceMin))
       const born = incidents[0].start[0]
       const days: Day[] = []
       for (let i = 89; i >= 0; i--) {
@@ -103,10 +108,14 @@ export function buildModel(
       for (const inc of incidents) downTotal += (inc.end ?? now) - inc.start[0]
       const last = incidents[incidents.length - 1]
       const isDown = last.end === null
-      // The first record is the monitor's own start marker, not an outage
-      const recoveredAgo = !isDown && incidents.length > 1 ? now - (last.end as number) : Infinity
       const pings = state.latency[m.id].map((p) => p.ping).filter((p) => p > 0)
-      const status: Status = restingIds.has(m.id) ? 'maintenance' : isDown ? 'down' : recoveredAgo < DAY ? 'degraded' : 'up'
+      // The last two stored readings since the last failure ended, a few minutes apart, so one slow
+      // answer doesn't count and a failure's timeout reading never does
+      const lastEnd = state.incident[m.id].slice(-1)[0].end
+      const failing = lastEnd === null
+      const since = state.latency[m.id].filter((p) => p.time >= (lastEnd ?? Infinity)).map((p) => p.ping)
+      const slow = since.length >= 2 && since.slice(-2).every((p) => p > (m.slowMs ?? SLOW_MS))
+      const status: Status = restingIds.has(m.id) ? 'maintenance' : isDown ? 'down' : slow ? 'degraded' : 'up'
 
       return {
         id: m.id,
@@ -115,13 +124,13 @@ export function buildModel(
         endpoint: m.endpoint,
         status,
         uptime: Math.round(((total - downTotal) / total) * 10000) / 100,
-        latest: isDown ? null : pings[pings.length - 1] ?? null,
+        // A failure inside the grace period has no real reading, only its timeout
+        latest: isDown || failing ? null : pings[pings.length - 1] ?? null,
         avgPing: pings.length ? Math.round(pings.reduce((a, b) => a + b, 0) / pings.length) : null,
         days,
         streakSeconds: isDown ? 0 : now - (last.end as number),
         lastError: isDown ? last.error[last.error.length - 1] : undefined,
         downSince: isDown ? last.start[0] : undefined,
-        recoveredAgoH: recoveredAgo < DAY ? Math.max(1, Math.round(recoveredAgo / 3600)) : undefined,
         ageDays: Math.floor(total / DAY),
       }
     })
@@ -130,7 +139,7 @@ export function buildModel(
   const events: ChronicleEvent[] = []
   for (const m of views) {
     for (const inc of state.incident[m.id]) {
-      if (inc.error[0] === 'dummy') continue
+      if (inc.error[0] === 'dummy' || !isOutage(inc, state.lastUpdate, graceMin)) continue
       events.push({
         kind: 'outage',
         title: m.name,

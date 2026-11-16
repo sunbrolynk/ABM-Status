@@ -12,8 +12,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   and falling back to English, with dates, durations and numbers in the reader's own format.
 - ABM Radio joins the party as the Bard, up while the station's now-playing feed says it's on air.
 
+### Changed
+
+- A failure only counts as an outage once it has lasted 3 minutes, on the page, in `/api/data`
+  and `/api/badge`, and in the Discord alerts, instead of every failed check showing red and
+  logging an outage. Down alerts now come at 3 minutes instead of 5.
+- Degraded means slow: the last two readings both over 3000 ms, or the monitor's own `slowMs`
+  (5000 ms for ABM Radio), instead of any monitor that recovered in the last 24 hours. One slow
+  answer colours nothing.
+- `/api/data` reports a monitor's latency as `null` while its last incident is open, instead of the
+  failed check's timeout, and counts `up` and `down` on the same 3-minute rule as each monitor.
+
 ### Fixed
 
+- Down alerts send once a failure reaches the grace period, instead of being taken for a change
+  of error text and dropped, which left only the recovery alerts reaching Discord.
 - The page loads on Cloudflare instead of failing with a server error, by picking the reader's
   language in the browser rather than on the server, which has none.
 - A young streak reads in hours, or "just rolled initiative", instead of "0 days".

@@ -58,6 +58,9 @@ const workerConfig: WorkerConfig = {
       expectedCodes: [200],
       responseKeyword: '"is_online":true',
       timeout: 10000,
+      // The station shares a home upload that is often maxed: it answers in about 0.4 s and up to
+      // about 1 s while working, so only a crawl past 5 s counts as degraded
+      slowMs: 5000,
     },
   ],
   notification: {
@@ -71,7 +74,9 @@ const workerConfig: WorkerConfig = {
         }
       : undefined,
     timeZone: 'America/Denver',
-    gracePeriod: 5,
+    // A failure is an outage only past 3 minutes: the alert waits this long, and the page leaves
+    // shorter failures off the bars, the log and the status
+    gracePeriod: 3,
     // Down and recovery only, not every change of error text while it's down
     skipErrorChangeNotification: true,
   },

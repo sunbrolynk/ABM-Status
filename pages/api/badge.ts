@@ -1,4 +1,6 @@
 import { NextRequest } from 'next/server'
+import { workerConfig } from '@/uptime.config'
+import { isDownNow } from '@/util/outage'
 import { CompactedMonitorStateWrapper, getFromStore } from '@/worker/src/store'
 
 export const runtime = 'edge'
@@ -53,7 +55,11 @@ export default async function handler(req: NextRequest): Promise<Response> {
       monitorId,
       compactedState.incidentLen(monitorId) - 1
     )
-    const isUp = lastIncident?.end !== null
+    const isUp = !isDownNow(
+      lastIncident,
+      compactedState.data.lastUpdate,
+      workerConfig.notification?.gracePeriod
+    )
 
     const badge: BadgePayload = {
       schemaVersion: 1,

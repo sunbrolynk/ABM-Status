@@ -3,6 +3,7 @@ import { MonitorTarget } from '../../types/config'
 import { workerConfig } from '../../uptime.config'
 import { doMonitor, getStatus } from './monitor'
 import { formatAndNotify, getWorkerLocation } from './util'
+import { downAlertDue, upAlertDue } from './alerts'
 import { CompactedMonitorStateWrapper, getFromStore, setToStore } from './store'
 import pLimit from 'p-limit'
 
@@ -71,11 +72,7 @@ const Worker = {
           monitorStatusChanged = true
           try {
             if (
-              // grace period not set OR ...
-              workerConfig.notification?.gracePeriod === undefined ||
-              // only when we have sent a notification for DOWN status, we will send a notification for UP status (within 30 seconds of possible drift)
-              currentTimeSecond - lastIncident.start[0] >=
-                (workerConfig.notification.gracePeriod + 1) * 60 - 30
+              upAlertDue(lastIncident, currentTimeSecond, workerConfig.notification?.gracePeriod)
             ) {
               await formatAndNotify(monitor, true, lastIncident.start[0], currentTimeSecond, 'OK')
             } else {
@@ -121,37 +118,24 @@ const Worker = {
         const currentIncident = state.getIncident(monitor.id, state.incidentLen(monitor.id) - 1)
         try {
           if (
-            // monitor status changed AND...
-            (monitorStatusChanged &&
-              // grace period not set OR ...
-              (workerConfig.notification?.gracePeriod === undefined ||
-                // have sent a notification for DOWN status
-                currentTimeSecond - currentIncident.start[0] >=
-                  (workerConfig.notification.gracePeriod + 1) * 60 - 30)) ||
-            // grace period is set AND...
-            (workerConfig.notification?.gracePeriod !== undefined &&
-              // grace period is met
-              currentTimeSecond - currentIncident.start[0] >=
-                workerConfig.notification.gracePeriod * 60 - 30 &&
-              currentTimeSecond - currentIncident.start[0] <
-                workerConfig.notification.gracePeriod * 60 + 30)
-          ) {
-            if (
-              currentIncident.start[0] !== currentTimeSecond &&
+            downAlertDue(
+              currentIncident,
+              currentTimeSecond,
+              monitorStatusChanged,
+              workerConfig.notification?.gracePeriod,
               workerConfig.notification?.skipErrorChangeNotification
-            ) {
-              console.log(
-                'Skipping notification for following error reason change due to user config'
-              )
-            } else {
-              await formatAndNotify(
-                monitor,
-                false,
-                currentIncident.start[0],
-                currentTimeSecond,
-                status.err
-              )
-            }
+            )
+          ) {
+            // Store this check even inside the write cooldown, so the page shows the outage the
+            // alert announces
+            statusChanged = true
+            await formatAndNotify(
+              monitor,
+              false,
+              currentIncident.start[0],
+              currentTimeSecond,
+              status.err
+            )
           } else {
             console.log(
               `Grace period (${workerConfig.notification

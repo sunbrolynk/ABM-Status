@@ -15,7 +15,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/sunbrolynk/abm-status/actions/workflows/checks.yml"><img src="https://github.com/sunbrolynk/abm-status/actions/workflows/checks.yml/badge.svg?branch=dev" alt="Checks"></a>
+  <a href="https://github.com/sunbrolynk/ABM-Status/actions/workflows/checks.yml"><img src="https://github.com/sunbrolynk/ABM-Status/actions/workflows/checks.yml/badge.svg?branch=dev" alt="Checks"></a>
 </p>
 
 <hr>
@@ -39,9 +39,25 @@ over or goes dark with the overall state. Maintenance shows as the party taking 
 or Maintenance) as well as the colour and the joke, and the 90-day history can be read with the
 keyboard.
 
-A monitor is Degraded when it is up but recovered from an outage less than 24 hours ago. The
-overall state is Degraded when any monitor is down or degraded, and Down only when every monitor
-is down.
+The overall state is Degraded when any monitor is down or degraded, and Down only when every
+monitor is down.
+
+### What counts as a problem
+
+The worker checks every monitor once a minute. A failed check only becomes an outage once the
+monitor has kept failing for 3 minutes, which is `notification.gracePeriod`, with 30 seconds of
+slack for the cron's timing. Until then the page shows it as up and logs nothing, and a failure
+that clears inside the 3 minutes never shows on the HP bar, the 90-day history, the quest log,
+`/api/data` or `/api/badge`. Once it reaches 3 minutes it shows as down from its first failed
+check, on the same check that sends the down alert. The stored history keeps every failure either way.
+
+A monitor is Degraded when its last two stored readings, a few minutes apart, are both slower
+than 3000 ms. One slow answer is jitter and colours nothing. A monitor can set its own limit in
+ms with `slowMs`. Only readings since the last failure ended count, so a blip's timeout reading
+never does. The site and docs answer in about 0.1 s, under 0.6 s at their slowest. ABM
+Radio shares my home upload, which is often maxed, so it answers in about 0.4 s and up to about
+1 s while working, and it gets `slowMs: 5000`. Its timeouts are single missed checks that clear
+on the next one, which the 3-minute rule leaves off the page.
 
 ## What it watches
 
@@ -51,9 +67,9 @@ is down.
 | Docs: Quick start | `docs_quick_start` | https://audiobookmanager.com/getting-started/quick-start/ |
 | Docs: Installation | `docs_installation` | https://audiobookmanager.com/installation/ |
 | API reference | `api_reference` | https://audiobookmanager.com/api-reference/ |
+| ABM Radio | `radio` | https://stream.audiobookmanager.com/api/nowplaying/lofi |
 
-ABM Radio (`radio.audiobookmanager.com`) is in `uptime.config.ts` but commented out, because the
-name doesn't resolve yet. I'll switch it on when the station goes live.
+ABM Radio is up while the station's now-playing feed says it's on air.
 
 ## Adding or removing a monitor
 
@@ -64,8 +80,14 @@ PR into `dev` like any other change.
 
 ## Alerts
 
-Downtime and recovery alerts go to a Discord channel through a webhook, after a monitor has been
-down for 5 minutes. Changes in the error text while it's still down don't send another alert.
+Downtime and recovery alerts go to a Discord channel through a webhook, on the same 3-minute
+rule as the page: a failure that clears sooner sends nothing, and only an outage that sent a down
+alert sends a recovery one. Slow answers don't send alerts. Changes in the error text while it's
+still down don't send another alert.
+
+The down alert goes out on the one check that lands at 3 minutes. If Cloudflare skips that cron
+run, no down alert is sent for that outage, though the page still shows it as down and the
+recovery alert still comes.
 With no `DISCORD_WEBHOOK_URL` secret set, no alerts are sent.
 
 ## Secrets
@@ -130,7 +152,8 @@ bash scripts/install-hooks.sh
 ```
 
 That installs the commit and push checks: gitleaks, a public-repo check for home-network
-details, and a changelog check.
+details, a changelog check and the tests (`node --test scripts/model.test.mjs
+worker/src/alerts.test.mjs`).
 
 The page itself is in `components/party/`, its styles are in `styles/party.css` and the jokes
 are in `components/party/copy.ts`. The fonts come from `@fontsource` packages, so the page makes

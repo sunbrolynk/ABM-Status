@@ -46,6 +46,8 @@ export type MonitorTarget = {
   responseForbiddenKeyword?: string
   checkProxy?: string
   checkProxyFallback?: boolean
+  // Response time in ms above which the page calls the monitor degraded; SLOW_MS when unset
+  slowMs?: number
 }
 
 export type WorkerConfig<TEnv = Env> = {

@@ -11,8 +11,8 @@ import { Footer } from './Footer'
 import { Member } from './Member'
 import { Shell } from './Shell'
 
-export function Home({ state, monitors }: { state: MonitorState; monitors: MonitorTarget[] }) {
-  const model = buildModel(state, monitors, maintenances)
+export function Home({ state, monitors, graceMin }: { state: MonitorState; monitors: MonitorTarget[]; graceMin?: number }) {
+  const model = buildModel(state, monitors, maintenances, graceMin)
   const age = useSecondsSince(state.lastUpdate)
   const line = useWit(BALL_KEYS[model.tone])
   const [pokes, setPokes] = useState(0)
